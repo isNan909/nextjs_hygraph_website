@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { submitContactForm } from "@/app/services/index";
 
 export default function Contact() {
+  const [submitted, setSubmitted] = useState(false);
   const [formValue, setFormValue] = useState({
     firstname: "",
     lastname: "",
@@ -10,9 +12,31 @@ export default function Contact() {
     phone: "",
   });
 
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setSubmitted(false);
+    }, 3000);
+    // Clean up the timeout to avoid memory leaks when the component unmounts or changes
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [submitted]);
+
   const handelSubmit = async (e) => {
     e.preventDefault();
-    console.log(formValue);
+    try {
+      const res = await submitContactForm(formValue);
+      setFormValue({
+        firstname: "",
+        lastname: "",
+        email: "",
+        phone: "",
+      });
+      setSubmitted(true);
+      return res;
+    } catch (e) {
+      console.log("error occured");
+    }
   };
 
   const handelChange = (e) => {
@@ -104,6 +128,11 @@ export default function Contact() {
               </button>
             </div>
           </form>
+          {submitted && (
+            <div className="bg-green-600 text-white p-2 my-4 rounded-md">
+              Form submitted sucessfully!
+            </div>
+          )}
         </div>
       </div>
     </>
